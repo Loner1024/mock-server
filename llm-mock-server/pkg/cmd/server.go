@@ -9,6 +9,7 @@ import (
 	"llm-mock-server/pkg/log"
 	"llm-mock-server/pkg/middleware"
 	"llm-mock-server/pkg/provider/chat"
+	"llm-mock-server/pkg/provider/decision"
 	"llm-mock-server/pkg/provider/embeddings"
 
 	"github.com/gin-gonic/gin"
@@ -44,6 +45,9 @@ func Run(option *options.Option) error {
 
 	// embeddings
 	server.POST("/v1/embeddings", embeddings.HandleEmbeddings)
+
+	// decision endpoints
+	decision.SetupRoutes(server)
 
 	log.Infof("Starting server on port %d", option.ServerPort)
 	return server.Run(fmt.Sprintf(":%d", option.ServerPort))

@@ -31,3 +31,12 @@
 - 文心一言
 - 智谱 AI
 - 阶跃星辰
+
+## 决策端点
+
+`llm-mock-server` 同时模拟两类决策协议，返回值固定，便于 e2e 断言：
+
+- `POST /v1/systemone`：TypeSafe System One 请求，`answers` 以问题名作为 key 返回。
+- `POST /v1/decisions`：OpenAI Decisions 请求，`answers` 按问题顺序返回数组。
+
+支持的题型为 `noul`/`predicate`、`choice`、`score` 和 `box`。请求体不合法或题型未知时返回 400。
