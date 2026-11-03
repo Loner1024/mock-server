@@ -119,8 +119,11 @@ func systemOneAnswer(question question) (map[string]any, error) {
 		return map[string]any{"type": "noul", "noul": noulProbability}, nil
 	case "choice":
 		criteria, err := criteriaKeys(question.Criteria)
-		if err != nil || len(criteria) == 0 {
+		if err != nil {
 			return nil, err
+		}
+		if len(criteria) == 0 {
+			return nil, errUnsupported("choice criteria must not be empty")
 		}
 		return map[string]any{
 			"type":          "choice",
@@ -130,8 +133,11 @@ func systemOneAnswer(question question) (map[string]any, error) {
 		}, nil
 	case "score":
 		levels, err := scoreLevels(question.Criteria)
-		if err != nil || len(levels) == 0 {
+		if err != nil {
 			return nil, err
+		}
+		if len(levels) == 0 {
+			return nil, errUnsupported("score criteria must not be empty")
 		}
 		return map[string]any{
 			"type":          "score",

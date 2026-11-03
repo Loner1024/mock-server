@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -95,6 +96,53 @@ func TestDecisionRoutesRejectInvalidBodies(t *testing.T) {
 		if response.Code != http.StatusBadRequest {
 			t.Fatalf("%s status = %d, want 400", path, response.Code)
 		}
+	}
+}
+
+func TestSystemOneRejectsEmptyChoiceCriteriaAndScoreLevels(t *testing.T) {
+	router := newTestRouter()
+	tests := []struct {
+		name string
+		body string
+		want string
+	}{
+		{
+			name: "empty choice criteria",
+			body: `{"model":"m","state":"x","questions":{"q":{"type":"choice","criteria":{}}}}`,
+			want: "choice criteria must not be empty",
+		},
+		{
+			name: "null choice criteria",
+			body: `{"model":"m","state":"x","questions":{"q":{"type":"choice","criteria":null}}}`,
+			want: "choice criteria must not be empty",
+		},
+		{
+			name: "empty score criteria",
+			body: `{"model":"m","state":"x","questions":{"q":{"type":"score","criteria":[]}}}`,
+			want: "score criteria must not be empty",
+		},
+		{
+			name: "null score criteria",
+			body: `{"model":"m","state":"x","questions":{"q":{"type":"score","criteria":null}}}`,
+			want: "score criteria must not be empty",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := perform(router, "/v1/systemone", []byte(tt.body))
+			if response.Code != http.StatusBadRequest {
+				t.Fatalf("status = %d, want 400; body = %s", response.Code, response.Body.String())
+			}
+			var payload struct {
+				Error string `json:"error"`
+			}
+			if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(payload.Error, tt.want) {
+				t.Fatalf("error = %q, want %q", payload.Error, tt.want)
+			}
+		})
 	}
 }
 
